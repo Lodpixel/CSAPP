@@ -1,7 +1,7 @@
 /* 
  * CS:APP Data Lab 
  * 
- * <Please put your name and userid here>
+ * <LoD>
  * 
  * bits.c - Source file with your solutions to the Lab.
  *          This is the file you will hand in to your instructor.
@@ -143,7 +143,10 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  int a = ~(x & y);
+  int b = a & x;
+  int c = a & y;
+  return ~((~ b) & (~ c));
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -152,9 +155,7 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmin(void) {
-
-  return 2;
-
+  return ~0 << 31;
 }
 //2
 /*
@@ -165,7 +166,9 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  int a = !((x + 1) ^ (~x));
+  int b = a & !(!(x + 1));
+  return b;
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +179,11 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  int a = (2 << 2) + 2;
+  int b = (a << 4) + a;
+  int c = (b << 8) + b;
+  int d = (c << 16) + c;
+  return !((d & x) ^ d); 
 }
 /* 
  * negate - return -x 
@@ -186,7 +193,7 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  return ~x + 1;
 }
 //3
 /* 
@@ -199,7 +206,12 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  int a = ~48 + 1;
+  int b = x + a;
+  int c = !((b | 7) ^ 7);
+  int d = !((b & 8) ^ 8);
+  int e = !((b | 9) ^ 9);
+  return c | (d & e);
 }
 /* 
  * conditional - same as x ? y : z 
@@ -209,7 +221,9 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  int t = !x;
+  int p = 2 + ~t;
+  return (y << p) + (z << t) + ~y + 1 + ~z + 1;
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -219,7 +233,15 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  int t = ~x + 1;
+  int a = 1 << 31;
+  int t_positive = !(t & a);
+  int y_positive = !(y & a);
+  int t_plus_y_negative = ((t + y) & a) >> 31;
+  int m = t_positive & y_positive & t_plus_y_negative;
+  int n = !t_positive & !y_positive & !t_plus_y_negative;
+  int p = !t_plus_y_negative;
+  return m | (!n & p) | !(x ^ a);
 }
 //4
 /* 
