@@ -253,7 +253,9 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  int y = ~x + 1;
+  int m = (x | y) >> 31;
+  return m + 1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
@@ -268,7 +270,25 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  int min = 1 << 31;
+  int mask_trans = (x & min) >> 31;
+  int after_trans = (mask_trans & (~(x + 1) + 1)) | (~mask_trans & x);
+  int trans1 = after_trans >> 16;
+  int mask_trans1 = !trans1 << 31 >> 31;
+  int after_trans1 = (mask_trans1 & after_trans) | (~mask_trans1 & trans1);
+  int trans2 = after_trans1 >> 8;
+  int mask_trans2 = !trans2 << 31 >> 31;
+  int after_trans2 = (mask_trans2 & after_trans1) | (~mask_trans2 & trans2);
+  int trans3 = after_trans2 >> 4;
+  int mask_trans3 = !trans3 << 31 >> 31;
+  int after_trans3 = (mask_trans3 & after_trans2) | (~mask_trans3 & trans3);
+  int trans4 = after_trans3 >> 2;
+  int mask_trans4 = !trans4 << 31 >> 31;
+  int after_trans4 = (mask_trans4 & after_trans3) | (~mask_trans4 & trans4);
+  int trans5 = after_trans4 >> 1;
+  int mask_trans5 = !trans5 << 31 >> 31;
+  int after_trans5 = (mask_trans5 & after_trans4) | (~mask_trans5 & trans5);
+  return 1 + (~mask_trans1 & 16) + (~mask_trans2 & 8) + (~mask_trans3 & 4) + (~mask_trans4 & 2) + (~mask_trans5 & 1) + (after_trans5 & 1);
 }
 //float
 /* 
@@ -283,7 +303,27 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  unsigned t = uf >> 23;
+  unsigned mask = (~(~0 << 23));
+  unsigned m = uf & mask;
+  unsigned tmp = 1 << 23;
+  unsigned t_after = t + 1;
+  unsigned s = t_after << 23;
+  if (!((t | (~255)) ^ (~255))) {
+    unsigned q = m + m;
+    if (!((q & tmp) ^ tmp)) {
+      t = t + 1;
+    }
+    return (t << 23) + (q & mask);
+  }
+  if (!((t & 255) ^ 255)) {
+    return uf;
+  }
+  
+  if (!((t_after | (~255)) ^ (~255))) {
+    return s;
+  }
+  return s + m;
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
@@ -298,7 +338,29 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  int sig = uf >> 31;
+  int exp = ((uf >> 23) & 255) - 127;
+  int tail = (uf & ~(~0 << 23)) + (1 << 23);
+  int k = exp - 23;
+  int ans = tail >> (~k + 1);
+  if (exp < 0) {
+    return 0;                                                          
+  }
+  if (exp > 30) {
+    return 0x80000000u;
+  }
+  if (k > 0) {
+    int ans = tail << k;
+      if (sig == 1) {
+        return ~ans + 1;
+      }
+    return ans;
+  }
+  
+  if (sig == 1) {
+    return ~ans + 1;
+  }
+  return ans;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
@@ -314,5 +376,14 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+  if (x < -149) {
+    return 0;
+  }
+  if (x >= 128) {
+    return (255 << 23);
+  }
+  if (x < -126) {
+    return 1 << (x + 149);
+  }
+  return (x + 127) << 23;
 }
